@@ -52,13 +52,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     }
   }
 
-  void _saveForm() {
-    final res = _form.currentState?.validate();
-    if (res != null && res) {
-      // print('saved');
-      _form.currentState?.save();
-    }
-  }
+
 
   Future<bool> isImage(url) async {
     http.Response response;
@@ -75,7 +69,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
     }
     return false;
   }
-
+  void _saveForm() {
+    final res = _form.currentState?.validate();
+    if (res != null && res) {
+      // print('saved');
+      _form.currentState?.save();
+    }
+  }
   @override
   Widget build(BuildContext context) {
     // print('rebuild');
@@ -98,11 +98,15 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         duration: Duration(milliseconds: 500),
                       ),
                     );
-                    isImage(_imageUrlController.text).then((ans) {
+                    isImage(imageUrl).then((ans) {
+                      print('mn');
                       print(ans);
                       if (ans){
                         _saveForm();
                         products.addProduct(Product(id: '', title: title!, description: description!, price: price!, imageUrl: imageUrl!),pId);
+                        print(title);
+                        print(description);
+                        print(price);
                         Navigator.of(context).pop();
                       }
                       else {
@@ -142,9 +146,17 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     FocusScope.of(context).requestFocus(_priceFocusNode);
                   },
                   onSaved: (String? val) {
-                    title = val;
+                    print('called save title ${val==''}');
+                    if(val!=''){
+                      title=val;
+                    }
                   },
                   validator: (val) {
+                    print('called validator title');
+
+                    if((val==null || val.trim().isEmpty) && title!=null)
+                        return null;
+                    print(title);
                     if (val == null || val.trim().isEmpty)
                       return 'Please provide a valid title';
                     else
@@ -173,13 +185,17 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     FocusScope.of(context).requestFocus(_descriptionFocusNode);
                   },
                   onSaved: (val) {
-                    price =double.tryParse(val!);
+                    print('called save price ${val==''}');
+                    if(val!=''){
+                      price=double.tryParse(val!);
+                    }
                   },
                   validator: (val) {
+                    print('called validator price');
+                    if((val==null || val.trim().isEmpty) && price!=null)
+                        return null;
                     final regx = RegExp(r'[0-9]+.[0-9]+', multiLine: false);
-                    if (val == null ||
-                        double.tryParse(val) == null ||
-                        !regx.hasMatch(val)) {
+                    if (val == null || val.isEmpty || !regx.hasMatch(val)) {
                       return 'Please provide valid price';
                     } else {
                       return null;
@@ -205,9 +221,18 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   maxLines: 10,
                   focusNode: _descriptionFocusNode,
                   onSaved: (des) {
-                    description =des;
+                    print('called save des ${des==''}');
+
+                    if(des!=''){
+                      description =des;
+
+                    }
                   },
                   validator: (des) {
+                    print('called validator des');
+
+                    if((des==null || des.trim().isEmpty) && description!=null)
+                        return null;
                     if (des == null || des.trim().isEmpty)
                       return 'Please provide a valid title';
                     else
@@ -253,14 +278,22 @@ class _EditProductScreenState extends State<EditProductScreen> {
                           _saveForm();
                         },
                         validator: (url) {
+                          print('called validator url');
+
+                          if((url==null || url.trim().isEmpty) && imageUrl!=null)
+                              return null;
                           final errorMsg = 'please provide a valid url';
-                          if (url == null || url.isEmpty)
+                          if (url == null || url.trim().isEmpty)
                             return errorMsg;
                           else
                             return null;
                         },
                         onSaved: (val){
-                          imageUrl=val;
+                          print('called save url ${val==''}');
+
+                          if(val!=''){
+                            imageUrl=val;
+                          }
                         },
                         controller: _imageUrlController,
                       ),
