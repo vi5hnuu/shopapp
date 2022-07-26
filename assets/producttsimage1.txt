@@ -1,0 +1,72 @@
+import 'dart:collection';
+
+import 'package:flutter/material.dart';
+
+import 'product.dart';
+
+class Products with ChangeNotifier{
+    List<Product> _items=[
+        Product(
+            id: 'p1',
+            title: 'Red Shirt',
+            description: 'A red shirt - it is pretty red!',
+            price: 29.99,
+            imageUrl:
+            'https://cdn.pixabay.com/photo/2016/10/02/22/17/red-t-shirt-1710578_1280.jpg',
+        ),
+        Product(
+            id: 'p2',
+            title: 'Trousers',
+            description: 'A nice pair of trousers.',
+            price: 59.99,
+            imageUrl:
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Trousers%2C_dress_%28AM_1960.022-8%29.jpg/512px-Trousers%2C_dress_%28AM_1960.022-8%29.jpg',
+        ),
+        Product(
+            id: 'p3',
+            title: 'Yellow Scarf',
+            description: 'Warm and cozy - exactly what you need for the winter.',
+            price: 19.99,
+            imageUrl:
+            'https://live.staticflickr.com/4043/4438260868_cc79b3369d_z.jpg',
+        ),
+        Product(
+            id: 'p4',
+            title: 'A Pan',
+            description: 'Prepare any meal you want.',
+            price: 49.99,
+            imageUrl:
+            'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
+        ),
+    ];
+
+    var _showFavouritesOnly=false;
+    List<Product> get items{
+        //flaw if we had another screen that show all products will not be possible
+        //bacause of this globak filter because let say we want to show only fav on this screen
+        //then _showFavouritesOnly is true and all screens listening to this will update thieir data and
+        //obviously our scrrenn that shoul show fav product will show without problem but other screen also update data with fav products instead of all
+        //so wwe should do this logic locally not globally
+        if(_showFavouritesOnly){
+            return _items.where((Product item)=>item.isFavourite).toList();
+        }
+        else
+            return UnmodifiableListView(_items);
+    }
+
+    void showFavouritesOnly(){
+        _showFavouritesOnly=true;
+        notifyListeners();
+    }
+    void showAll(){
+        _showFavouritesOnly=false;
+        notifyListeners();
+    }
+    void addProduct(Product newProduct){
+        // _items.add(newProduct);
+        notifyListeners();
+    }
+    Product findById({required String id}){
+        return _items.firstWhere((item) =>item.id==id );
+    }
+}
