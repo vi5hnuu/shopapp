@@ -17,18 +17,17 @@ class Products with ChangeNotifier {
   }
 
   Future<void> loadData() async{
+    _items.clear();
     await db.collection('products').get().then((coll){
       for(var doc in coll.docs){
         final data=doc.data();//doc has map<String,dynamic>
         Product p=Product(id: doc.id, title: data['title'], description: data['description'], price:data['price'], imageUrl: data['imageUrl'],isFavourite: data['isFavourite']);
-        if(!_items.contains(p))
           _items.add(p);
       }
     });//todo : handle error
   }
 
   Future<void> reloadData() async{
-    _items.clear();
     await this.loadData(); //await then notify the screens using the products [we refreshed this in your products screen which is listening for products change]
     //we call notify listenners only after all products are loaded not after single product is loaded
     notifyListeners();

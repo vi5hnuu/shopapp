@@ -20,7 +20,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
   var _isLoading=true;
 
   @override
-  void initState(){//todo : adding again and again
+  void initState(){//todo : modify function to clear cart and load again
     Provider.of<Products>(context,listen: false).loadData().then((_){
       setState(() {
         _isLoading=false;
@@ -114,7 +114,9 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
         ],
       ),
       drawer: AppDrawer(),
-      body:_isLoading ?Center(child: CircularProgressIndicator(),)  :ProductsGrid(showFavs: _showOnlyFavourites),
+      body:_isLoading ?Center(child: CircularProgressIndicator(),)  :RefreshIndicator(
+          onRefresh: Provider.of<Products>(context,listen: false).reloadData,
+          child: ProductsGrid(showFavs: _showOnlyFavourites)),
     );
   }
 }
