@@ -18,6 +18,10 @@ final db = FirebaseFirestore.instance;
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  // print('------->${db.collection('products')}');
+  // print('------->${db.collection('products').parent}');
+  // print('------->${db.collection('products').doc()}');
+  // print('------->${db.collection('products').doc('/products/9Xcupld4Vce3vX8BJOUn')}');
   runApp(const MyApp());
 }
 

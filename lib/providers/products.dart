@@ -19,7 +19,7 @@ class Products with ChangeNotifier {
   Future<void> loadData() async{
     await db.collection('products').get().then((coll){
       for(var doc in coll.docs){
-        final data=doc.data();
+        final data=doc.data();//doc has map<String,dynamic>
         Product p=Product(id: doc.id, title: data['title'], description: data['description'], price:data['price'], imageUrl: data['imageUrl'],isFavourite: data['isFavourite']);
         if(!_items.contains(p))
           _items.add(p);
@@ -34,7 +34,11 @@ class Products with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addProduct(Product newProduct) {
+  void addProductAgain(Product newProduct){
+    _items.add(newProduct);
+    notifyListeners();
+  }
+  Future<void> addProduct(Product newProduct) async{
     final pdt = {
       'title': newProduct.title,
       'description': newProduct.description,
@@ -42,7 +46,8 @@ class Products with ChangeNotifier {
       'price': newProduct.price,
       'isFavourite': newProduct.isFavourite,
     };
-    return db.collection('products').add(pdt).then((DocumentReference ref) {
+
+    return db.collection('products').add(pdt).then((DocumentReference ref) async{
       final product = Product(
           id: newProduct.id != '' ? newProduct.id : ref.id,
           title: newProduct.title,
@@ -55,11 +60,11 @@ class Products with ChangeNotifier {
       } else {
         _items.remove(this.findById(id: newProduct.id));
         _items.insert(0, product);
+        await db.collection('products').doc(newProduct.id).delete();
       }
       notifyListeners();
     }).catchError((err) {
       //todo: do something of this error
-      print(err);
       print(err);
     });
   }

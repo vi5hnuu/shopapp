@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shopapp/screens/orders_screen.dart';
-import 'package:shopapp/widgets/app_drawer.dart';
 import 'package:shopapp/widgets/cart_item.dart';
 
+import '../main.dart' show db;
 import '../providers/cart.dart';
 import '../providers/orders.dart';
 
@@ -15,6 +15,7 @@ class CartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<Cart>(context);
+    bool amountGtZero=cart.totalAmount>0;
     print('cart screen rebuild.');
 
     return Scaffold(
@@ -54,20 +55,17 @@ class CartScreen extends StatelessWidget {
               ),
               childrenPadding: EdgeInsets.all(10),
               children: [
-                OutlinedButton(
-                  onPressed: () {
+                ElevatedButton(
+                  onPressed:amountGtZero ?  () async{
                     bool isAdded=Provider.of<Orders>(context,listen: false).addOrder(cart.items.values.toList(),cart.totalAmount);
                     if(isAdded){
                       Navigator.pushNamed(context, OrdersScreen.routeName);
                       cart.clear();
                     }
-                  },
+                  } : null,
                   style: ButtonStyle(
-                    side: MaterialStateProperty.all(
-                      BorderSide(color: Theme.of(context).colorScheme.primary),
-                    ),
                     backgroundColor: MaterialStateProperty.all(
-                      Theme.of(context).colorScheme.secondary.withOpacity(0.05),
+                      Theme.of(context).colorScheme.primary.withOpacity(0.5),
                     ),
                   ),
                   child: const Text(

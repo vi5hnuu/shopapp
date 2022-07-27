@@ -3,6 +3,9 @@ import 'package:shopapp/providers/products.dart';
 import 'package:shopapp/screens/edit_product.dart';
 import 'package:provider/provider.dart';
 
+import '../main.dart' show db;
+import '../providers/product.dart';
+
 class UserProductItem extends StatelessWidget {
   final String pId;
   final String title;
@@ -61,9 +64,17 @@ class UserProductItem extends StatelessWidget {
                       ],
                     );
                   }
-              ).then((ans){
-                if(ans)
-                  Provider.of<Products>(context,listen: false).deleteProduct(pId);
+              ).then((ans) async{
+                if(ans){
+                  Products products=Provider.of<Products>(context,listen: false);
+                  Product ref=products.findById(id: pId);
+                  products.deleteProduct(pId);
+
+                  //just in case del failed //Todo : this code is not tested
+                  await db.collection('products').doc(pId).delete().catchError((err){
+                    products.addProductAgain(ref);//
+                  });
+                }
               });
             },
             icon: const Icon(

@@ -102,6 +102,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
           products.addProduct(Product(id: pId!=null ? pId! : '', title: title!, description: description!, price: price!, imageUrl: imageUrl!,isFavourite: isFav)).then((value){
             Navigator.pop(context);//pop indicator first
             Navigator.of(context).pop();
+          }).catchError((err){
+            print(err);
           });
         }
         else{

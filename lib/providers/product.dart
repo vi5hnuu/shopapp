@@ -1,4 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+
+import '../main.dart' show db;
 
 class Product with ChangeNotifier{
   final String id;
@@ -17,9 +21,14 @@ class Product with ChangeNotifier{
       this.isFavourite=false});
 
 
-  void toggleFavouritesStatus(){
+  Future<void> toggleFavouritesStatus() async{
+    bool oldFavStatus=this.isFavourite;
     this.isFavourite=!this.isFavourite;
     notifyListeners();
+    db.collection('products').doc(id).update({'isFavourite':this.isFavourite}).catchError((err){
+      this.isFavourite=oldFavStatus;
+      notifyListeners();
+    });
   }
 
   @override
