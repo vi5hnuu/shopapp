@@ -17,12 +17,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final _priceFocusNode = FocusNode();
   final _descriptionFocusNode = FocusNode();
   final _form = GlobalKey<FormState>();
+  bool _isLoading=false;
   String? pId;
   var isInit=true;
   String? title;
   double? price;
   String? description;
   String? imageUrl;
+  bool isFav=false;
   final _imageUrlController = TextEditingController();
   //Todo : make input controller for imageUrl and set Icon if url is invalid or show image in container
   //Todo : addListerner on focusNode of imageUlr when its not in focus we can try loanding image if any
@@ -46,6 +48,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
        price=product.price;
        description=product.description;
        imageUrl=product.imageUrl;
+       isFav=product.isFavourite;
+       _imageUrlController.text=imageUrl!;
       }
       super.didChangeDependencies();
       isInit=false;
@@ -64,71 +68,82 @@ class _EditProductScreenState extends State<EditProductScreen> {
     final type = ['image/png', 'image/jpg', 'image/jpeg'];
     if (response.statusCode == 200) {
       final content_type = response.headers['content-type'];
-      print(content_type);
       if (type.contains(content_type)) return true;
     }
     return false;
   }
-  void _saveForm() {
+
+  void _saveForm(Products products) async{
+    ///////////push indicator on new screen
+    Navigator.push(context, MaterialPageRoute(builder: (BuildContext ctx){
+      return Scaffold(
+        body: Container(
+          alignment: Alignment.center,
+          color: Colors.white,
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }),);
+
+    ///////////////////////////////////////////////
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Processing ...'),
+        duration: Duration(milliseconds: 500),
+      ),
+    );
     final res = _form.currentState?.validate();
     if (res != null && res) {
-      // print('saved');
-      _form.currentState?.save();
+      // print(_imageUrlController.text);
+      isImage(_imageUrlController.text).then((ans){//not image url as saved state is called at line 87 after checking url
+        if (ans){
+          _form.currentState?.save();
+          products.addProduct(Product(id: pId!=null ? pId! : '', title: title!, description: description!, price: price!, imageUrl: imageUrl!,isFavourite: isFav)).then((value){
+            Navigator.pop(context);//pop indicator first
+            Navigator.of(context).pop();
+          });
+        }
+        else{
+          Navigator.pop(context);//pop indicator
+          _imageUrlController.clear();
+          _form.currentState?.validate();
+        }
+      } ).catchError((_){
+        Navigator.pop(context);//pop indicator...if error
+      });
     }
   }
+
+
   @override
   Widget build(BuildContext context) {
-    // print('rebuild');
+    print('rebuild');
+    final products=Provider.of<Products>(context,listen: false);
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit/Add products'),
         actions: [
           Padding(
             padding: EdgeInsets.only(right: 20),
-            child: Consumer<Products>(
-              builder: (BuildContext ctx,Products products,_){
-                // print('Only icon rebuuild');
-                return IconButton(
-                  icon: Icon(Icons.save),
-                  onPressed: () async {
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Processing ...'),
-                        duration: Duration(milliseconds: 500),
-                      ),
-                    );
-                    isImage(imageUrl).then((ans) {
-                      print('mn');
-                      print(ans);
-                      if (ans){
-                        _saveForm();
-                        products.addProduct(Product(id: '', title: title!, description: description!, price: price!, imageUrl: imageUrl!),pId);
-                        print(title);
-                        print(description);
-                        print(price);
-                        Navigator.of(context).pop();
-                      }
-                      else {
-                        _imageUrlController.clear();
-                        _saveForm();
-                      }
-                    });
-                  },
-                );
+            child: IconButton(
+              icon: Icon(Icons.save),
+              onPressed:() {
+                _saveForm(products);
               },
             ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
+      body:_isLoading ? Center(child: CircularProgressIndicator(),) : SingleChildScrollView(
+        child:Padding(
           padding: EdgeInsets.all(15),
           child: Form(
             key: _form,
             child: Column(
               children: [
                 TextFormField(
+                  initialValue: title,
                   decoration: InputDecoration(
                     labelText: 'Title',
                     // icon: Icon(Icons.title),
@@ -146,17 +161,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     FocusScope.of(context).requestFocus(_priceFocusNode);
                   },
                   onSaved: (String? val) {
-                    print('called save title ${val==''}');
-                    if(val!=''){
-                      title=val;
-                    }
+                    title=val;
                   },
                   validator: (val) {
-                    print('called validator title');
-
-                    if((val==null || val.trim().isEmpty) && title!=null)
-                        return null;
-                    print(title);
                     if (val == null || val.trim().isEmpty)
                       return 'Please provide a valid title';
                     else
@@ -167,6 +174,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   height: 25,
                 ),
                 TextFormField(
+                  initialValue:price!=null ? price.toString():null,
                   decoration: InputDecoration(
                     labelText: 'Price',
                     // icon: Icon(Icons.title),
@@ -185,15 +193,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     FocusScope.of(context).requestFocus(_descriptionFocusNode);
                   },
                   onSaved: (val) {
-                    print('called save price ${val==''}');
-                    if(val!=''){
-                      price=double.tryParse(val!);
-                    }
+                    price=double.tryParse(val!);
                   },
                   validator: (val) {
-                    print('called validator price');
-                    if((val==null || val.trim().isEmpty) && price!=null)
-                        return null;
                     final regx = RegExp(r'[0-9]+.[0-9]+', multiLine: false);
                     if (val == null || val.isEmpty || !regx.hasMatch(val)) {
                       return 'Please provide valid price';
@@ -206,6 +208,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   height: 25,
                 ),
                 TextFormField(
+                  initialValue: description,
                   decoration: InputDecoration(
                     contentPadding: EdgeInsets.all(25),
                     // isCollapsed: true,
@@ -221,18 +224,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   maxLines: 10,
                   focusNode: _descriptionFocusNode,
                   onSaved: (des) {
-                    print('called save des ${des==''}');
-
-                    if(des!=''){
-                      description =des;
-
-                    }
+                    description=des;
                   },
                   validator: (des) {
-                    print('called validator des');
-
-                    if((des==null || des.trim().isEmpty) && description!=null)
-                        return null;
                     if (des == null || des.trim().isEmpty)
                       return 'Please provide a valid title';
                     else
@@ -272,28 +266,21 @@ class _EditProductScreenState extends State<EditProductScreen> {
                             borderRadius: BorderRadius.circular(15),
                           ),
                         ),
-                        textInputAction: TextInputAction.done,
+                        textInputAction: TextInputAction.none,
                         keyboardType: TextInputType.url,
-                        onFieldSubmitted: (_) {
-                          _saveForm();
-                        },
                         validator: (url) {
-                          print('called validator url');
-
-                          if((url==null || url.trim().isEmpty) && imageUrl!=null)
-                              return null;
                           final errorMsg = 'please provide a valid url';
-                          if (url == null || url.trim().isEmpty)
+                          if (url == null || url.trim().isEmpty){
                             return errorMsg;
-                          else
+                          }
+                          else{
                             return null;
+                          }
                         },
                         onSaved: (val){
-                          print('called save url ${val==''}');
-
-                          if(val!=''){
-                            imageUrl=val;
-                          }
+                          print('val ');
+                          print(val);
+                          imageUrl=val;
                         },
                         controller: _imageUrlController,
                       ),

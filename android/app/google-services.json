@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "916556045317",
+    "project_id": "shopcart-f40b8",
+    "storage_bucket": "shopcart-f40b8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:916556045317:android:1a8c597792487f60e5506c",
+        "android_client_info": {
+          "package_name": "com.vi5hnu.shopapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "916556045317-00vgafaeh215qbgqcmnrtcfkdrq1eou4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxKFgPIq8P0MMj7FN7tBglT35DB_qy2ec"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "916556045317-00vgafaeh215qbgqcmnrtcfkdrq1eou4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

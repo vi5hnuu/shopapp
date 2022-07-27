@@ -20,7 +20,7 @@ class CartScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Your Cart'),
-        systemOverlayStyle: SystemUiOverlayStyle(
+        systemOverlayStyle: const SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
         ),
       ),
@@ -35,32 +35,9 @@ class CartScreen extends StatelessWidget {
             child: ExpansionTile(
               title: Text('Order Total'),
               tilePadding: EdgeInsets.symmetric(horizontal: 10),
-              children: [
-                OutlinedButton(
-                  onPressed: () {
-                    bool isAdded=Provider.of<Orders>(context,listen: false).addOrder(cart.items.values.toList(),cart.totalAmount);
-                    if(isAdded){
-                      Navigator.pushNamed(context, OrdersScreen.routeName);
-                      cart.clear();
-                    }
-                  },
-                  child: Text(
-                    'Place Order',
-                    style: TextStyle(color: Colors.black),
-                  ),
-                  style: ButtonStyle(
-                    side: MaterialStateProperty.all(
-                      BorderSide(color: Theme.of(context).colorScheme.primary),
-                    ),
-                    backgroundColor: MaterialStateProperty.all(
-                      Theme.of(context).colorScheme.secondary.withOpacity(0.05),
-                    ),
-                  ),
-                ),
-              ],
               leading: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [
+                children: const [
                   Icon(
                     Icons.summarize_outlined,
                     size: 34,
@@ -76,9 +53,32 @@ class CartScreen extends StatelessWidget {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
               childrenPadding: EdgeInsets.all(10),
+              children: [
+                OutlinedButton(
+                  onPressed: () {
+                    bool isAdded=Provider.of<Orders>(context,listen: false).addOrder(cart.items.values.toList(),cart.totalAmount);
+                    if(isAdded){
+                      Navigator.pushNamed(context, OrdersScreen.routeName);
+                      cart.clear();
+                    }
+                  },
+                  style: ButtonStyle(
+                    side: MaterialStateProperty.all(
+                      BorderSide(color: Theme.of(context).colorScheme.primary),
+                    ),
+                    backgroundColor: MaterialStateProperty.all(
+                      Theme.of(context).colorScheme.secondary.withOpacity(0.05),
+                    ),
+                  ),
+                  child: const Text(
+                    'Place Order',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
+              ],
             ),
           ),
-          Divider(
+          const Divider(
             color: Colors.grey,
             indent: 15,
             endIndent: 15,
