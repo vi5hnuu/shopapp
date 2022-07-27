@@ -37,6 +37,7 @@ class Cart with ChangeNotifier {
   }
 
 
+
   void decrQuantity(String pId){
     var item=getCartItemForPId(pId);
     if(item.quantity>=2){
@@ -49,6 +50,9 @@ class Cart with ChangeNotifier {
     item.quantity++;
     notifyListeners();
   }
+
+
+
   CartItem getCartItemForPId(String pId){
     return _items.entries.firstWhere((entry) => entry.key==pId).value;
   }

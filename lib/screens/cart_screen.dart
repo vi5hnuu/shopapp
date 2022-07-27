@@ -57,10 +57,13 @@ class CartScreen extends StatelessWidget {
               children: [
                 ElevatedButton(
                   onPressed:amountGtZero ?  () async{
-                    bool isAdded=Provider.of<Orders>(context,listen: false).addOrder(cart.items.values.toList(),cart.totalAmount);
+                    final orders=Provider.of<Orders>(context,listen: false);
+                    bool isAdded=await orders.addOrder(cart.items.values.toList(),cart.totalAmount);
                     if(isAdded){
                       Navigator.pushNamed(context, OrdersScreen.routeName);
                       cart.clear();
+                    }else{
+                      //todo: show dialog that order addition to local list is failed
                     }
                   } : null,
                   style: ButtonStyle(
