@@ -17,7 +17,7 @@ class _OrderSItemState extends State<OrderSItem> {
   var _expanded=false;
   @override
   Widget build(BuildContext context) {
-    print('build order again');
+    // print('build order again');
     return Card(
       margin: EdgeInsets.all(10),
       child: Column(
