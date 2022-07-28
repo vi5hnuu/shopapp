@@ -28,9 +28,8 @@ class Products with ChangeNotifier {
   }
 
   Future<void> reloadData() async{
-    await this.loadData(); //await then notify the screens using the products [we refreshed this in your products screen which is listening for products change]
+    await this.loadData().then((value) =>notifyListeners()); //await then notify the screens using the products [we refreshed this in your products screen which is listening for products change]
     //we call notify listenners only after all products are loaded not after single product is loaded
-    notifyListeners();
   }
 
   void addProductAgain(Product newProduct){

@@ -86,7 +86,9 @@ class _CartScreenState extends State<CartScreen> {
                       bool isAdded=await orders.addOrder(cart.items.values.toList(),cart.totalAmount);
                       if(isAdded){
                         Navigator.pushNamed(context, OrdersScreen.routeName);
-                        cart.clear();
+                        final docs=await db.collection('cartItems').get();
+                        for(var ref in docs.docs)
+                          db.collection('cartItems').doc(ref.id).delete();//clear cart
                       }else{
                         //todo: show dialog that order addition to local list is failed
                       }

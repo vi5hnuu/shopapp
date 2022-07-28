@@ -132,7 +132,19 @@ class Cart with ChangeNotifier {
     });
   }
 
+  CartItem findItemAt(String pId){
+    return _items.entries.firstWhere((entry) => entry.key==pId).value;
+  }
+
   void removeItem(String pId) {
+    final savedataref=findItemAt(pId);
+    db.collection('cartItems').get().then((coll) => coll.docs.where((docref) =>docref['pId']==pId)).then((docref){
+      db.collection('cartItems').doc(docref.first.id).delete();
+    }).catchError((err){
+      _items.putIfAbsent(pId, () => savedataref);
+      notifyListeners();
+    });
+    //////////
     _items.remove(pId);
     notifyListeners();
   }
