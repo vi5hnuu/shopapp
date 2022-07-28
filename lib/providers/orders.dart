@@ -52,6 +52,11 @@ class Orders with ChangeNotifier{
     _orders.clear();
     await db.collection('orders').get().then((coll){
       final data=coll.docs;
+
+      //sort latest to oldest
+      data.sort((snp1,snp2){
+        return snp2.data()['orderDateTime']-snp1.data()['orderDateTime'];
+      });
       for(var doc in data){
         // print(doc.data());//check it
         Map<String,dynamic> ourData=doc.data();
