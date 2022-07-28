@@ -2,7 +2,9 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 
-class CartItem{
+import '../main.dart' show db;
+
+class CartItem {
   final String id; //this id is diff than product it belongs to
   final String title;
   int quantity;
@@ -21,72 +23,121 @@ class Cart with ChangeNotifier {
     return UnmodifiableMapView(_items);
   }
 
-
-  int get itemCount{
+  int get itemCount {
     return _items.length;
   }
 
-  MapEntry<String,CartItem> getCartItemAt(int i){
+  MapEntry<String, CartItem> getCartItemAt(int i) {
     return _items.entries.elementAt(i);
   }
 
-  double get totalAmount{
-    return _items.values.fold(0, (previousValue, cartItem){
-      return previousValue+=cartItem.quantity*cartItem.price;
+  double get totalAmount {
+    return _items.values.fold(0, (previousValue, cartItem) {
+      return previousValue += cartItem.quantity * cartItem.price;
     });
   }
 
+  Future<void> decrQuantity(String pId) async {
+    var item = getCartItemForPId(pId);
+    if (item.quantity >= 2)
+      return this
+          .addItem(
+              productId: pId, price: item.price, title: item.title, inc: false)
+          .then((_) {
+        notifyListeners();
+      });
+  }
 
-
-  void decrQuantity(String pId){
-    var item=getCartItemForPId(pId);
-    if(item.quantity>=2){
-      item.quantity--;
+  Future<void> incQuantity(String pId) async {
+    var item = getCartItemForPId(pId);
+    return this
+        .addItem(
+            productId: pId, price: item.price, title: item.title, inc: true)
+        .then((_) {
       notifyListeners();
-    }
-  }
-  void incQuantity(String pId){
-    var item=getCartItemForPId(pId);
-    item.quantity++;
-    notifyListeners();
+    });
   }
 
-
-
-  CartItem getCartItemForPId(String pId){
-    return _items.entries.firstWhere((entry) => entry.key==pId).value;
+  CartItem getCartItemForPId(String pId) {
+    print(_items.length);
+    return _items.entries.firstWhere((entry) {
+      print(entry.key);
+      print(pId);
+      print(entry.value.title);
+      return entry.key == pId;
+    }).value;
   }
-  void addItem(
+
+  Future<void> addItem(
       {required String productId,
       required double price,
-      required String title}) {
+      required String title,
+      bool inc = true}) async {
     if (_items.containsKey(productId)) {
+      print(_items.containsKey(productId));
       //we already have this product in cart
-      _items.update(
+      await db
+          .collection('cartItems')
+          .get()
+          .then((snapshots) => snapshots.docs.where((docref) {
+                print('here');
+                return getCartItemForPId(productId).id == docref.id;
+              }))
+          .then((ourDoc) {
+        final data = ourDoc.first.data()['cartItem'];
+        db.collection('cartItems').doc(ourDoc.first.id).update({
+          'cartItem': {
+            'quantity': data['quantity'] + (inc ? 1 : -1),
+            'price': data['price'],
+            'title': data['title']
+          }
+        });
+      }).then((_) {
+        _items.update(
           productId,
           (existingCartItem) => CartItem(
               id: existingCartItem.id,
               title: existingCartItem.title,
-              quantity: existingCartItem.quantity + 1,
-              price: existingCartItem.price));
+              quantity: existingCartItem.quantity + (inc ? 1 : -1),
+              price: existingCartItem.price),
+        );
+        notifyListeners();
+      });
     } else {
-
-      _items.putIfAbsent(
-          productId,
-          () => CartItem(
-              id: DateTime.now().toString(),
-              title: title,
-              quantity: 1,
-              price: price));
+      await db.collection('cartItems').add({
+        'pId': productId,
+        'cartItem': {"title": title, "quantity": 1, "price": price}
+      }).then((docRef) {
+        _items.putIfAbsent(
+            productId,
+            () => CartItem(
+                id: docRef.id, title: title, quantity: 1, price: price));
+        notifyListeners();
+      }).catchError((err) {
+        //do something with this 💩
+      });
     }
-    notifyListeners();
   }
 
-  void removeItem(String pId){
+  Future<void> loadCartItems() async {
+    _items.clear();
+    db.collection('cartItems').get().then((coll){
+      for(var singleDoc in coll.docs){
+        // print(singleDoc.data());
+        final Map<String,dynamic> dt=singleDoc.data();
+        CartItem item=CartItem(id: singleDoc.id, title: dt['cartItem']['title'], quantity: dt['cartItem']['quantity'], price: dt['cartItem']['price']);
+        _items.putIfAbsent(dt['pId'], () => item);
+      }
+      notifyListeners();
+    });
+  }
+
+  void removeItem(String pId) {
     _items.remove(pId);
     notifyListeners();
   }
-  void clear(){
+
+  void clear() {
     print('cart Cleared');
     _items.clear();
     notifyListeners();
