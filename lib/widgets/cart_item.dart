@@ -2,18 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:shopapp/providers/cart.dart';
 import 'package:provider/provider.dart';
 
-class CartSItem extends StatelessWidget {
+class CartSItem extends StatefulWidget {//show loading indication in place of +1 -1
   final String pId;
   const CartSItem({required this.pId});
+
+  @override
+  State<CartSItem> createState() => _CartSItemState();
+}
+
+class _CartSItemState extends State<CartSItem> {
+  bool _isIncPressed=false;
+  bool _isDcrPressed=false;
   @override
   Widget build(BuildContext context) {
     final cart=Provider.of<Cart>(context);
-    final item=cart.getCartItemForPId(pId);
+    final item=cart.getCartItemForPId(widget.pId);
     print('cart Item rebuild.');
     return Dismissible(
       direction: DismissDirection.endToStart,
       onDismissed: (DismissDirection dir){
-          cart.removeItem(pId);
+          cart.removeItem(widget.pId);
       },
       confirmDismiss: (DismissDirection dir){
         return showDialog(//not attacched to ScaffoldMess... as it can be shown anywhere
@@ -74,12 +82,20 @@ class CartSItem extends StatelessWidget {
               children: [
                 Material(
                   borderRadius: BorderRadius.circular(30),
-                  child: IconButton(
-                    onPressed:(){
-                      cart.incQuantity(pId);
+                  child:_isIncPressed ? Center(child: CircularProgressIndicator(),) : IconButton(
+                    disabledColor: Colors.grey,
+                    onPressed:() async{
+                      setState(() {
+                        _isIncPressed=true;
+                      });
+                      cart.incQuantity(widget.pId).then((_) {//Pid is not lost as state build is called for indicator...[widget.pId is safe]
+                        setState(() {
+                          _isIncPressed=false;
+                        });
+                      } );
                     },
                     icon: Icon(Icons.plus_one),
-                    tooltip: '-1  Quantity',
+                    tooltip: '+1  Quantity',
                     splashColor:Theme.of(context).colorScheme.primary,
                     splashRadius: 30,
                   ),
@@ -99,9 +115,16 @@ class CartSItem extends StatelessWidget {
                 ),
                 Material(
                   borderRadius: BorderRadius.circular(30),
-                  child: IconButton(
-                    onPressed:(){
-                      cart.decrQuantity(pId);
+                  child:_isDcrPressed ? Center(child: CircularProgressIndicator(),) : IconButton(
+                    onPressed:() async{
+                      setState(() {
+                        _isDcrPressed=true;
+                      });
+                      cart.decrQuantity(widget.pId).then((_) {//Pid is not lost as state build is called for indicator...[widget.pId is safe]
+                        setState(() {
+                          _isDcrPressed=false;
+                        });
+                      } );
                     },
                     icon: Icon(Icons.exposure_minus_1),
                     tooltip: '-1  Quantity',

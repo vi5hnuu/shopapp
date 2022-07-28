@@ -4,14 +4,21 @@ import 'package:provider/provider.dart';
 import '../providers/cart.dart';
 import '../providers/product.dart';
 
-class ProductItem extends StatelessWidget {
+class ProductItem extends StatefulWidget {//to show loading spinned while product is being addded
   const ProductItem();
+
+  @override
+  State<ProductItem> createState() => _ProductItemState();
+}
+
+class _ProductItemState extends State<ProductItem> {
+  bool _isLoading=false;
   @override
   Widget build(BuildContext context) {
     final Product product=Provider.of<Product>(context,listen: false);
     final Cart cart=Provider.of<Cart>(context,listen: false);
     // print('rebuild entire grid item ??');
-    return ClipRRect(
+    return _isLoading ? Center(child: CircularProgressIndicator(),) : ClipRRect(
       borderRadius: BorderRadius.circular(15),
       child: GridTile(
         child: GestureDetector(
@@ -39,7 +46,13 @@ class ProductItem extends StatelessWidget {
                 icon:
                 Icon(Icons.shopping_cart_outlined),
                 onPressed: () async{
+                  setState(() {
+                    _isLoading=true;
+                  });
                   cart.addItem(productId: product.id, price: product.price, title: product.title).then((_){
+                    setState(() {
+                      _isLoading=false;
+                    });
                     ScaffoldMessenger.of(context).hideCurrentSnackBar(
                         reason: SnackBarClosedReason.dismiss
                     );
@@ -61,6 +74,11 @@ class ProductItem extends StatelessWidget {
                           ),
                         )
                     );
+                  }).catchError((err){
+                    setState(() {
+                      _isLoading=false;
+                    });
+                    //todo : catch error
                   });
 
                   },
