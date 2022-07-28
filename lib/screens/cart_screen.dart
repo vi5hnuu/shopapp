@@ -107,7 +107,7 @@ class _CartScreenState extends State<CartScreen> {
                     } : null,
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(
-                        Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                        (!amountGtZero) ? null :Theme.of(context).colorScheme.primary.withOpacity(0.4),
                       ),
                     ),
                     child: const Text(
