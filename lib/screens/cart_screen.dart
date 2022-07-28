@@ -18,6 +18,7 @@ class CartScreen extends StatefulWidget {//statefull just to show indicator and 
 
 class _CartScreenState extends State<CartScreen> {
   bool _isLoading=true;
+  bool _orderPlaced=false;
   @override
   void initState() {
     Provider.of<Cart>(context,listen: false).loadCartItems().then((_){
@@ -46,7 +47,7 @@ class _CartScreenState extends State<CartScreen> {
           statusBarColor: Colors.transparent,
         ),
       ),
-      body:_isLoading ? Center(
+      body:(_isLoading || _orderPlaced) ? Center(
         child: CircularProgressIndicator(),
       ) : RefreshIndicator(
         onRefresh: cart.loadCartItems,
@@ -81,17 +82,28 @@ class _CartScreenState extends State<CartScreen> {
                 childrenPadding: EdgeInsets.all(10),
                 children: [
                   ElevatedButton(
-                    onPressed:amountGtZero ?  () async{
+                    onPressed:(amountGtZero) ?  () async{
+                      setState(() {
+                        _orderPlaced=true;
+                      });
                       final orders=Provider.of<Orders>(context,listen: false);
                       bool isAdded=await orders.addOrder(cart.items.values.toList(),cart.totalAmount);
                       if(isAdded){
-                        Navigator.pushNamed(context, OrdersScreen.routeName);
                         final docs=await db.collection('cartItems').get();
                         for(var ref in docs.docs)
                           db.collection('cartItems').doc(ref.id).delete();//clear cart
+                          cart.clear();//not necessay as deleteing from db and the they are loaded again but cart.clear notify shop screen to update badge
+                        setState(() {
+                          _orderPlaced=false;
+                        });
+                        Navigator.pushNamed(context, OrdersScreen.routeName);
                       }else{
+                        setState(() {
+                          _orderPlaced=false;
+                        });
                         //todo: show dialog that order addition to local list is failed
                       }
+
                     } : null,
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all(

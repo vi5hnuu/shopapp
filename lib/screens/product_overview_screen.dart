@@ -37,7 +37,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('shop rebuild');
+    // print('shop rebuild');
     return Scaffold(
       appBar: AppBar(
         title: Text('MyShop'),

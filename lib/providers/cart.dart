@@ -59,11 +59,14 @@ class Cart with ChangeNotifier {
   }
 
   CartItem getCartItemForPId(String pId) {
-    print(_items.length);
+    // print(_items.length);
     return _items.entries.firstWhere((entry) {
+      print('.............');
       print(entry.key);
       print(pId);
-      print(entry.value.title);
+      print('.............');
+
+      // print(entry.value.title);
       return entry.key == pId;
     }).value;
   }
@@ -80,11 +83,18 @@ class Cart with ChangeNotifier {
           .collection('cartItems')
           .get()
           .then((snapshots) => snapshots.docs.where((docref) {
-                print('here');
-                return getCartItemForPId(productId).id == docref.id;
+              print(docref.id);
+              print('docref id');
+                bool ans= getCartItemForPId(productId).id == docref.id;
+                print('selected ${ans}');
+                return ans;
               }))
           .then((ourDoc) {
+            print('ourDoc');
+            print(ourDoc);
+            print('x');
         final data = ourDoc.first.data()['cartItem'];
+        print(data);
         db.collection('cartItems').doc(ourDoc.first.id).update({
           'cartItem': {
             'quantity': data['quantity'] + (inc ? 1 : -1),
@@ -102,7 +112,7 @@ class Cart with ChangeNotifier {
               price: existingCartItem.price),
         );
         notifyListeners();
-      });
+      }).catchError((err){print(err);});
     } else {
       await db.collection('cartItems').add({
         'pId': productId,
@@ -151,7 +161,7 @@ class Cart with ChangeNotifier {
 
   void clear() {
     print('cart Cleared');
-    _items.clear();
+    // _items.clear();
     notifyListeners();
   }
 }
