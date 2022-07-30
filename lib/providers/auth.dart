@@ -29,7 +29,7 @@ class Auth with ChangeNotifier{
   }
 
   Future<void> _authenticate({required String email,required String password,required String urlSegment}) async{
-    final url='https://identitytoolkit.googleapis.com/v1/accounts:${urlSegment}?key=AIzaSyDxKFgPIq8P0MMj7FN7tBglT35DB_qy2ec';
+    final url='https://identitytoolkit.googleapis.com/v1/accounts:${urlSegment}?key=[API_KEY]';
     final body=jsonEncode({
       'email':email,
       'password':password,
