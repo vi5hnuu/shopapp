@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 enum FilterOptions { Favourites, All }
 
 class ProductOverviewScreen extends StatefulWidget {
+  static const routeName='/productOverviewScreen';
   @override
   State<ProductOverviewScreen> createState() => _ProductOverviewScreenState();
 }
@@ -37,7 +38,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // print('shop rebuild');
+    print('shop rebuild');
     return Scaffold(
       appBar: AppBar(
         title: Text('MyShop'),
@@ -115,7 +116,7 @@ class _ProductOverviewScreenState extends State<ProductOverviewScreen> {
       ),
       drawer: AppDrawer(),
       body:_isLoading ?Center(child: CircularProgressIndicator(),)  :RefreshIndicator(
-          onRefresh: Provider.of<Products>(context,listen: false).reloadData,
+          onRefresh: Provider.of<Products>(context,listen: true).reloadData,
           child: ProductsGrid(showFavs: _showOnlyFavourites)),
     );
   }

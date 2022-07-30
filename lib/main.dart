@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shopapp/providers/auth.dart';
 import 'package:shopapp/providers/cart.dart';
 import 'package:shopapp/providers/orders.dart';
 import 'package:shopapp/providers/products.dart';
+import 'package:shopapp/screens/auth_screen.dart';
 import 'package:shopapp/screens/cart_screen.dart';
 import 'package:shopapp/screens/edit_product.dart';
 import 'package:shopapp/screens/orders_screen.dart';
@@ -34,38 +36,37 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (BuildContext ctx)=>Auth()),
         ChangeNotifierProvider(create: (BuildContext ctx)=>Products()),
         ChangeNotifierProvider(create: (BuildContext ctx)=>Cart()),
         ChangeNotifierProvider(create: (BuildContext ctx)=>Orders()),
       ],
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSwatch(
-              primarySwatch: Colors.purple,
-            accentColor: Colors.deepOrange
-          ),
-          fontFamily: 'Lato',
-        ),
-        initialRoute: '/',
-        routes: {
-          '/':(BuildContext ctx){return ProductOverviewScreen();},
-          ProductDetailScreen.routeName:(BuildContext ctx){return ProductDetailScreen();},
-          CartScreen.routeName:(BuildContext ctx){return CartScreen();},
-          OrdersScreen.routeName:(BuildContext ctx){return OrdersScreen();},
-          UserProductScreen.routeName:(BuildContext ctx){return UserProductScreen();},
-          EditProductScreen.routeName:(BuildContext ctx){return EditProductScreen();},
+      child: Consumer<Auth>(
+        builder: (BuildContext ctx,auth,_){
+          print('rebuild');
+          return MaterialApp(
+            title: 'MyShop',
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSwatch(
+                  primarySwatch: Colors.purple,
+                  accentColor: Colors.deepOrange
+              ),
+              fontFamily: 'Lato',
+            ),
+            home:auth.isAuth ? ProductOverviewScreen() : AuthScreen(),//with initial route not working
+            routes: {
+              // ProductOverviewScreen.routeName:(BuildContext ctx){return ProductOverviewScreen();},
+              ProductDetailScreen.routeName:(BuildContext ctx){return ProductDetailScreen();},
+              CartScreen.routeName:(BuildContext ctx){return CartScreen();},
+              OrdersScreen.routeName:(BuildContext ctx){return OrdersScreen();},
+              UserProductScreen.routeName:(BuildContext ctx){return UserProductScreen();},
+              EditProductScreen.routeName:(BuildContext ctx){return EditProductScreen();},
+              // AuthScreen.routeName:(BuildContext ctx){return AuthScreen();}
+            },
+          );
         },
       ),
     );
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ProductOverviewScreen();
-  }
-}

@@ -66,8 +66,6 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen> {
-  bool _loading=true;
-
   @override
   Widget build(BuildContext context) {
     print('Order screen rebuild');
